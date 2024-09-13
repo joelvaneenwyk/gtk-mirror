@@ -1,0 +1,11 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions:
+  - name: gtk
+    path: ./.github/config/gtk.dict
+    addWords: true
+dictionaries:
+  - gtk
+words: []
+ignoreWords: []
+import: []
