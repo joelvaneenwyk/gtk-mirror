@@ -252,3 +252,75 @@ tasks:
       PLATFORM: '{{.PLATFORM | default "x64"}}'
     cmds:
       - cmd: '"{{ .MSBUILD_EXE }}" "{{.TASKFILE_DIR}}/vs/gtk.sln" /t:Build /p:Configuration="{{.CONFIG}}" /p:Platform="{{.PLATFORM}}"'
+
+  setup:
+    cmds:
+      - cmd: | # shell
+          set -eax
+
+          if [ -z "$CROSS_FILE" ]; then
+            if [ -z "$NEED_WINE" ]; then
+              export CROSS_FILE="/usr/share/mingw/toolchain-mingw64.meson"
+            else
+              export CROSS_FILE="/usr/share/mingw/toolchain-mingw64-wine.meson"
+              export MESON_EXE_WRAPPER="/usr/bin/x86_64-w64-mingw64-wine"
+            fi
+          fi
+
+          if [ ! -e ./.venv/Scripts/activate ]; then
+            rye sync
+          fi
+
+          # shellcheck disable=SC1091
+          . ./.venv/Scripts/activate || true
+
+          if pacman --version; then
+            pacman -Syu --noconfirm
+            pacman -S --needed --noconfirm \
+              "filesystem" \
+              "${MINGW_PACKAGE_PREFIX}-gstreamer" \
+              "${MINGW_PACKAGE_PREFIX}-pango" \
+              "${MINGW_PACKAGE_PREFIX}-gcc" \
+              "${MINGW_PACKAGE_PREFIX}-binutils" \
+              "${MINGW_PACKAGE_PREFIX}-cairo" \
+              "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2" \
+              "${MINGW_PACKAGE_PREFIX}-glib2" \
+              "${MINGW_PACKAGE_PREFIX}-libepoxy" \
+              "${MINGW_PACKAGE_PREFIX}-pango" \
+              "${MINGW_PACKAGE_PREFIX}-cairo"
+          fi
+
+          # shellcheck disable=SC1091
+          . .gitlab-ci/show-info-linux.sh || true
+
+          export PATH="$HOME/.local/bin:$PATH"
+          # pip3 install --user meson~=1.0
+          meson subprojects download
+          meson subprojects update --reset
+          if meson \
+            -Dgobject-introspection:werror=false \
+            -Dgraphene:introspection=disabled \
+            -Dintrospection=disabled \
+            -Dmedia-gstreamer=disabled \
+            -Dvulkan=disabled \
+            _build; then
+            echo "Meson configuration succeeded."
+          else
+            echo "Meson configuration failed, attempting to reconfigure."
+            if meson \
+              -Dgobject-introspection:werror=false \
+              -Dgraphene:introspection=disabled \
+              -Dintrospection=disabled \
+              -Dmedia-gstreamer=disabled \
+              -Dvulkan=disabled \
+              --reconfigure \
+              _build; then
+              echo "Meson reconfigured succeeded."
+            else
+              echo "Meson reconfiguration failed."
+              exit 5
+            fi
+          fi
+          meson compile -C _build
+
+          # exec meson "${args[@]}" .build .
