@@ -20,7 +20,6 @@ meson setup -Dintrospection=enabled -Ddocumentation=true --force-fallback-for gi
 meson compile -C${release_build_dir} || exit
 meson dist -C${release_build_dir} --include-subprojects || exit
 
-
 echo -e "\n\nGTK ${version} release on branch ${branch} in ./${release_build_dir}/:\n"
 
 ls -l --sort=time -r "${release_build_dir}/meson-dist"
