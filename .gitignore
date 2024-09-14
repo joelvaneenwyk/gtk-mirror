@@ -5,3 +5,5 @@
 .git/
 .venv/
 _build/
+_ccache/
+.task/
