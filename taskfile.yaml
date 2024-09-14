@@ -72,7 +72,8 @@ env:
 tasks:
   default:
     cmds:
-      - task: meson-build
+      - task: setup
+      # - task: meson-build
 
   meson-clean:
     cmds:
@@ -295,9 +296,9 @@ tasks:
 
           export PATH="$HOME/.local/bin:$PATH"
           # pip3 install --user meson~=1.0
-          meson subprojects download
-          meson subprojects update --reset
-          if meson \
+          rye run meson subprojects download
+          rye run meson subprojects update --reset
+          if rye run meson setup \
             -Dgobject-introspection:werror=false \
             -Dgraphene:introspection=disabled \
             -Dintrospection=disabled \
@@ -307,7 +308,7 @@ tasks:
             echo "Meson configuration succeeded."
           else
             echo "Meson configuration failed, attempting to reconfigure."
-            if meson \
+            if rye run meson setup \
               -Dgobject-introspection:werror=false \
               -Dgraphene:introspection=disabled \
               -Dintrospection=disabled \
@@ -321,6 +322,30 @@ tasks:
               exit 5
             fi
           fi
-          meson compile -C _build
+          rye run meson compile -C _build
 
+          # args=(
+          #     # --prefix /usr/x86_64-w64-mingw32/sys-root/mingw
+          #     # --libdir /usr/x86_64-w64-mingw32/sys-root/mingw/lib
+          #     # --libexecdir /usr/x86_64-w64-mingw32/sys-root/mingw/lib
+          #     # --bindir /usr/x86_64-w64-mingw32/sys-root/mingw/bin
+          #     # --sbindir /usr/x86_64-w64-mingw32/sys-root/mingw/bin
+          #     # --includedir /usr/x86_64-w64-mingw32/sys-root/mingw/include
+          #     # --datadir /usr/x86_64-w64-mingw32/sys-root/mingw/share
+          #     # --mandir /usr/x86_64-w64-mingw32/sys-root/mingw/share/man
+          #     # --infodir /usr/x86_64-w64-mingw32/sys-root/mingw/share/info
+          #     # --localedir /usr/x86_64-w64-mingw32/sys-root/mingw/share/locale
+          #     # --sysconfdir /usr/x86_64-w64-mingw32/sys-root/mingw/etc
+          #     # --localstatedir /var
+          #     # --sharedstatedir /var/lib
+          #     --buildtype release
+          #     --wrap-mode nofallback
+          #     -D b_lto=true
+          #     -D strip=true
+          #     --default-library shared
+          #     "$@"
+          # )
+          # if [ -e "${CROSS_FILE}" ]; then
+          #     args+=(--cross-file "${CROSS_FILE}")
+          # fi
           # exec meson "${args[@]}" .build .
