@@ -254,27 +254,36 @@ tasks:
     cmds:
       - cmd: '"{{ .MSBUILD_EXE }}" "{{.TASKFILE_DIR}}/vs/gtk.sln" /t:Build /p:Configuration="{{.CONFIG}}" /p:Platform="{{.PLATFORM}}"'
 
-  setup:
+  sync:
+    sources:
+      - pyproject.toml
+    generates:
+      - .venv/**/*
     cmds:
+      - cmd: rye sync --no-lock
+
+  setup:
+    deps: [sync]
+    vars:
+      MESON_OPTIONS: >-
+        -Dgobject-introspection:werror=false
+        -Dgraphene:introspection=disabled
+        -Dintrospection=disabled
+        -Dmedia-gstreamer=disabled
+        -Dvulkan=disabled
+        --buildtype release
+        --wrap-mode nofallback
+        -D b_lto=true
+        -D strip=true
+        --default-library shared
+      CROSS_FILE_DEFAULT: /usr/share/mingw/toolchain-mingw64.meson
+      CROSS_FILE_WINE: /usr/share/mingw/toolchain-mingw64-wine.meson
+      MESON_EXE_WRAPPER_WINE: /usr/bin/x86_64-w64-mingw64-wine
+    cmds:
+      - cmd: |
+          . .gitlab-ci/show-info-linux.sh
+        ignore_error: true
       - cmd: | # shell
-          set -eax
-
-          if [ -z "$CROSS_FILE" ]; then
-            if [ -z "$NEED_WINE" ]; then
-              export CROSS_FILE="/usr/share/mingw/toolchain-mingw64.meson"
-            else
-              export CROSS_FILE="/usr/share/mingw/toolchain-mingw64-wine.meson"
-              export MESON_EXE_WRAPPER="/usr/bin/x86_64-w64-mingw64-wine"
-            fi
-          fi
-
-          if [ ! -e ./.venv/Scripts/activate ]; then
-            rye sync
-          fi
-
-          # shellcheck disable=SC1091
-          . ./.venv/Scripts/activate || true
-
           if pacman --version; then
             pacman -Syu --noconfirm
             pacman -S --needed --noconfirm \
@@ -289,63 +298,38 @@ tasks:
               "${MINGW_PACKAGE_PREFIX}-libepoxy" \
               "${MINGW_PACKAGE_PREFIX}-pango" \
               "${MINGW_PACKAGE_PREFIX}-cairo"
+          else
+            echo "Pacman not found."
+            exit 0
+          fi
+      - cmd: | # shell
+          if [ ! -e ./.venv/Scripts/activate ]; then
+            rye sync
+          fi
+      - cmd: | # shell
+          set -eax
+
+          if [ -z "$CROSS_FILE" ]; then
+            if [ -z "$NEED_WINE" ]; then
+              export CROSS_FILE="{{.CROSS_FILE_DEFAULT}}"
+            else
+              export CROSS_FILE="{{.CROSS_FILE_WINE}}"
+              export MESON_EXE_WRAPPER="{{.MESON_EXE_WRAPPER_WINE}}"
+            fi
           fi
 
-          # shellcheck disable=SC1091
-          . .gitlab-ci/show-info-linux.sh || true
-
-          export PATH="$HOME/.local/bin:$PATH"
-          # pip3 install --user meson~=1.0
           rye run meson subprojects download
           rye run meson subprojects update --reset
-          if rye run meson setup \
-            -Dgobject-introspection:werror=false \
-            -Dgraphene:introspection=disabled \
-            -Dintrospection=disabled \
-            -Dmedia-gstreamer=disabled \
-            -Dvulkan=disabled \
-            _build; then
+
+          if rye run meson setup {{.MESON_OPTIONS}} _build; then
             echo "Meson configuration succeeded."
           else
             echo "Meson configuration failed, attempting to reconfigure."
-            if rye run meson setup \
-              -Dgobject-introspection:werror=false \
-              -Dgraphene:introspection=disabled \
-              -Dintrospection=disabled \
-              -Dmedia-gstreamer=disabled \
-              -Dvulkan=disabled \
-              --reconfigure \
-              _build; then
-              echo "Meson reconfigured succeeded."
+            if rye run meson setup --reconfigure {{.MESON_OPTIONS}} _build; then
+              echo "Meson reconfiguration succeeded."
             else
               echo "Meson reconfiguration failed."
               exit 5
             fi
           fi
           rye run meson compile -C _build
-
-          # args=(
-          #     # --prefix /usr/x86_64-w64-mingw32/sys-root/mingw
-          #     # --libdir /usr/x86_64-w64-mingw32/sys-root/mingw/lib
-          #     # --libexecdir /usr/x86_64-w64-mingw32/sys-root/mingw/lib
-          #     # --bindir /usr/x86_64-w64-mingw32/sys-root/mingw/bin
-          #     # --sbindir /usr/x86_64-w64-mingw32/sys-root/mingw/bin
-          #     # --includedir /usr/x86_64-w64-mingw32/sys-root/mingw/include
-          #     # --datadir /usr/x86_64-w64-mingw32/sys-root/mingw/share
-          #     # --mandir /usr/x86_64-w64-mingw32/sys-root/mingw/share/man
-          #     # --infodir /usr/x86_64-w64-mingw32/sys-root/mingw/share/info
-          #     # --localedir /usr/x86_64-w64-mingw32/sys-root/mingw/share/locale
-          #     # --sysconfdir /usr/x86_64-w64-mingw32/sys-root/mingw/etc
-          #     # --localstatedir /var
-          #     # --sharedstatedir /var/lib
-          #     --buildtype release
-          #     --wrap-mode nofallback
-          #     -D b_lto=true
-          #     -D strip=true
-          #     --default-library shared
-          #     "$@"
-          # )
-          # if [ -e "${CROSS_FILE}" ]; then
-          #     args+=(--cross-file "${CROSS_FILE}")
-          # fi
-          # exec meson "${args[@]}" .build .
