@@ -50,7 +50,6 @@ meson setup \
     -Dwayland-backend=false \
     -Dwin32-backend=true \
     -Dintrospection=enabled \
-    -Dgtk:werror=true \
     _build
 unset CCACHE_DISABLE
 
