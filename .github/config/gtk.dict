@@ -74,3 +74,4 @@ VCPKG
 vcvarsall
 VULKAN
 werror
+winflexbison

@@ -4,9 +4,9 @@
 version: "3"
 
 vars:
-  VCPKG_BOOTSTRAP_BAT: "{{.TASKFILE_DIR}}/external/vcpkg/bootstrap-vcpkg.bat"
-  VCPKG_BOOTSTRAP_SH: "{{.TASKFILE_DIR}}/external/vcpkg/bootstrap-vcpkg.sh"
-  VCPKG_EXE: "{{.TASKFILE_DIR}}/external/vcpkg/vcpkg.exe"
+  VCPKG_BOOTSTRAP_BAT: "{{.TASKFILE_DIR}}/build-aux/vcpkg/bootstrap-vcpkg.bat"
+  VCPKG_BOOTSTRAP_SH: "{{.TASKFILE_DIR}}/build-aux/vcpkg/bootstrap-vcpkg.sh"
+  VCPKG_EXE: "{{.TASKFILE_DIR}}/build-aux/vcpkg/vcpkg.exe"
 
   RUN_WINDOWS: 'cmd /d /c'
   RUN_UNIX: 'sh -c'
@@ -42,8 +42,8 @@ vars:
     - "ncurses"
     - "{{.PACKAGE_NAME_PREFIX}}-{{.BUILD_CC}}"
     - "{{.PACKAGE_NAME_PREFIX}}-clang"
-    - "{{.PACKAGE_NAME_PREFIX}}-gcc"
-    - "{{.PACKAGE_NAME_PREFIX}}-glib2"
+    # - "{{.PACKAGE_NAME_PREFIX}}-gcc"
+    # - "{{.PACKAGE_NAME_PREFIX}}-glib2"
     # - "{{.PACKAGE_NAME_PREFIX}}-meson"
     - "{{.PACKAGE_NAME_PREFIX}}-ncurses"
     - "{{.PACKAGE_NAME_PREFIX}}-ntldd"
@@ -72,7 +72,7 @@ env:
 tasks:
   default:
     cmds:
-      - task: setup
+      - task: gtk-build
       # - task: meson-build
 
   meson-clean:
@@ -177,7 +177,10 @@ tasks:
     status:
       - pkg-config --version
     cmds:
-      - cmd: scoop install extras/pkg-config-lite
+      - cmd: |
+          scoop install \
+            extras/pkg-config-lite \
+            main/winflexbison
 
   install-packages-pacman:
     vars:
@@ -262,8 +265,8 @@ tasks:
     cmds:
       - cmd: rye sync --no-lock
 
-  setup:
-    deps: [sync]
+  gtk-build:
+    deps: [sync, install-dependencies]
     vars:
       MESON_OPTIONS: >-
         -Dgobject-introspection:werror=false
@@ -283,29 +286,6 @@ tasks:
       - cmd: |
           . .gitlab-ci/show-info-linux.sh
         ignore_error: true
-      - cmd: | # shell
-          if pacman --version; then
-            pacman -Syu --noconfirm
-            pacman -S --needed --noconfirm \
-              "filesystem" \
-              "${MINGW_PACKAGE_PREFIX}-gstreamer" \
-              "${MINGW_PACKAGE_PREFIX}-pango" \
-              "${MINGW_PACKAGE_PREFIX}-gcc" \
-              "${MINGW_PACKAGE_PREFIX}-binutils" \
-              "${MINGW_PACKAGE_PREFIX}-cairo" \
-              "${MINGW_PACKAGE_PREFIX}-gdk-pixbuf2" \
-              "${MINGW_PACKAGE_PREFIX}-glib2" \
-              "${MINGW_PACKAGE_PREFIX}-libepoxy" \
-              "${MINGW_PACKAGE_PREFIX}-pango" \
-              "${MINGW_PACKAGE_PREFIX}-cairo"
-          else
-            echo "Pacman not found."
-            exit 0
-          fi
-      - cmd: | # shell
-          if [ ! -e ./.venv/Scripts/activate ]; then
-            rye sync
-          fi
       - cmd: | # shell
           set -eax
 
