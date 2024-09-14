@@ -10,5 +10,20 @@
 #   universal: true
 
 -e file:.
+jinja2==3.1.4
+    # via gtk
+markdown==3.7
+    # via gtk
+markupsafe==2.1.5
+    # via gtk
+    # via jinja2
 meson==1.5.1
+    # via gtk
+packaging==24.1
+    # via gtk
+pygments==2.18.0
+    # via gtk
+smartypants==2.0.1
+    # via typogrify
+typogrify==2.0.7
     # via gtk
