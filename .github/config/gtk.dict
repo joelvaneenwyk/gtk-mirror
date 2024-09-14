@@ -26,6 +26,7 @@ libslirp
 localedir
 localstatedir
 mandir
+markupsafe
 msbuild
 MSBUILD
 MSYS
@@ -37,12 +38,15 @@ pacman
 pango
 pixbuf
 pkgconfig
+pygments
 sbindir
 sharedstatedir
+shellcheck
 speexdsp
 subprojects
 sysconfdir
 TASKFILE
+typogrify
 vcpkg
 VCPKG
 VULKAN
