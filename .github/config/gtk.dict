@@ -30,6 +30,7 @@ fribidi
 gobject
 graphene
 gstreamer
+gtest
 gtkdll
 includedir
 infodir

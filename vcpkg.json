@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "gtk",
+  "description": "",
+  "version": "4.16.2",
+  "dependencies": [
+    "glib",
+    "gtest",
+    "pkgconf",
+    "vcpkg-msbuild",
+    "vcpkg-pkgconfig-get-modules"
+  ],
+  "builtin-baseline": "c4467cb686f92671f0172aa8299a77d908175b4e"
+}

@@ -1,6 +1,6 @@
 [project]
 name = "gtk"
-version = "0.1.0"
+version = "4.16.2"
 description = "Add your description here"
 authors = [
     { name = "Joel Van Eenwyk", email = "joel.vaneenwyk@gmail.com" }
