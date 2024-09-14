@@ -1,2 +1,6 @@
 /subprojects/*/
 .flatpak-builder/
+/vs2022/
+.build/
+.git/
+.venv/
