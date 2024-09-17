@@ -7,3 +7,6 @@
 _build/
 _ccache/
 .task/
+# pixi environments
+.pixi
+*.egg-info

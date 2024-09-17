@@ -31,3 +31,18 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gtk"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tool.pixi.pypi-dependencies]
+gtk = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+glib = ">=2.80.3,<3"
+meson = ">=1.5.1,<2"
+ninja = ">=1.12.1,<2"
+cmake = ">=3.30.3,<4"
