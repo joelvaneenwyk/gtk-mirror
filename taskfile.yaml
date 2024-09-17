@@ -268,8 +268,8 @@ tasks:
   gtk-build:
     deps: [sync, install-dependencies]
     vars:
+      #  -Dgobject-introspection:werror=false
       MESON_OPTIONS: >-
-        -Dgobject-introspection:werror=false
         -Dgraphene:introspection=disabled
         -Dintrospection=disabled
         -Dmedia-gstreamer=disabled
@@ -286,30 +286,13 @@ tasks:
       - cmd: |
           . .gitlab-ci/show-info-linux.sh
         ignore_error: true
-      - cmd: | # shell
-          set -eax
-
-          if [ -z "$CROSS_FILE" ]; then
-            if [ -z "$NEED_WINE" ]; then
-              export CROSS_FILE="{{.CROSS_FILE_DEFAULT}}"
-            else
-              export CROSS_FILE="{{.CROSS_FILE_WINE}}"
-              export MESON_EXE_WRAPPER="{{.MESON_EXE_WRAPPER_WINE}}"
-            fi
-          fi
-
+      - cmd: |
           rye run meson subprojects download
+      - cmd: |
           rye run meson subprojects update --reset
-
-          if rye run meson setup {{.MESON_OPTIONS}} _build; then
-            echo "Meson configuration succeeded."
-          else
-            echo "Meson configuration failed, attempting to reconfigure."
-            if rye run meson setup --reconfigure {{.MESON_OPTIONS}} _build; then
-              echo "Meson reconfiguration succeeded."
-            else
-              echo "Meson reconfiguration failed."
-              exit 5
-            fi
-          fi
+      - cmd: |
+          rye run meson setup \
+            -Dwerror=true -Dcairo:werror=false -Dgi-docgen:werror=false -Dgraphene:werror=false -Dlibepoxy:werror=false -Dlibsass:werror=false -Dpango:werror=false -Dsassc:werror=false -Dgdk-pixbuf:werror=false -Dglib:werror=false -Dlibcloudproviders:werror=false -Dlibpng:werror=false -Dlibtiff:werror=false -Dsysprof:werror=false -Dwayland-protocols:werror=false -Dharfbuzz:werror=false -Dfreetype2:werror=false -Dfontconfig:werror=false -Dfribidi:werror=false -Dlibffi:werror=false -Dlibjpeg-turbo:werror=false -Dmutest:werror=false -Dpixman:werror=false -Dproxy-libintl:werror=false \
+            "{{.TASKFILE_DIR}}" "{{joinPath .TASKFILE_DIR ".build"}}"
+      - cmd: |
           rye run meson compile -C _build

@@ -147,12 +147,12 @@ packages:
   name: gtk
   version: 4.16.2
   path: .
-  sha256: 8dc7e311f7ad86016ebd3e198deac639fbc5ac7156a73087b2ea847a18590060
+  sha256: b9185832a135f51564403caac38716eab03c310c5da2390f1e34b94b71e42a49
   requires_dist:
+  - meson~=1.0
   - jinja2>=3.1.4
   - markdown>=3.7
   - markupsafe>=2.1.5
-  - meson~=1.0
   - packaging>=24.1
   - pygments>=2.18.0
   - typogrify>=2.0.7
