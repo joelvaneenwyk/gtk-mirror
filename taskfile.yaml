@@ -263,7 +263,7 @@ tasks:
     generates:
       - .venv/**/*
     cmds:
-      - cmd: rye sync --no-lock
+      - cmd: rye sync --verbose
 
   gtk-build:
     deps: [sync, install-dependencies]
@@ -282,17 +282,44 @@ tasks:
       CROSS_FILE_DEFAULT: /usr/share/mingw/toolchain-mingw64.meson
       CROSS_FILE_WINE: /usr/share/mingw/toolchain-mingw64-wine.meson
       MESON_EXE_WRAPPER_WINE: /usr/bin/x86_64-w64-mingw64-wine
+      MESON: >-
+        pixi run
+        rye run
+        meson
     cmds:
       - cmd: |
           . .gitlab-ci/show-info-linux.sh
         ignore_error: true
       - cmd: |
-          rye run meson subprojects download
+          {{.MESON}} subprojects download
       - cmd: |
-          rye run meson subprojects update --reset
+          {{.MESON}} subprojects update --reset
       - cmd: |
-          rye run meson setup \
-            -Dwerror=true -Dcairo:werror=false -Dgi-docgen:werror=false -Dgraphene:werror=false -Dlibepoxy:werror=false -Dlibsass:werror=false -Dpango:werror=false -Dsassc:werror=false -Dgdk-pixbuf:werror=false -Dglib:werror=false -Dlibcloudproviders:werror=false -Dlibpng:werror=false -Dlibtiff:werror=false -Dsysprof:werror=false -Dwayland-protocols:werror=false -Dharfbuzz:werror=false -Dfreetype2:werror=false -Dfontconfig:werror=false -Dfribidi:werror=false -Dlibffi:werror=false -Dlibjpeg-turbo:werror=false -Dmutest:werror=false -Dpixman:werror=false -Dproxy-libintl:werror=false \
+          {{.MESON}} setup \
+            -Dwerror=true \
+            -Dcairo:werror=false \
+            -Dgi-docgen:werror=false \
+            -Dgraphene:werror=false \
+            -Dlibepoxy:werror=false \
+            -Dlibsass:werror=false \
+            -Dpango:werror=false \
+            -Dsassc:werror=false \
+            -Dgdk-pixbuf:werror=false \
+            -Dglib:werror=false \
+            -Dlibcloudproviders:werror=false \
+            -Dlibpng:werror=false \
+            -Dlibtiff:werror=false \
+            -Dsysprof:werror=false \
+            -Dwayland-protocols:werror=false \
+            -Dharfbuzz:werror=false \
+            -Dfreetype2:werror=false \
+            -Dfontconfig:werror=false \
+            -Dfribidi:werror=false \
+            -Dlibffi:werror=false \
+            -Dlibjpeg-turbo:werror=false \
+            -Dmutest:werror=false \
+            -Dpixman:werror=false \
+            -Dproxy-libintl:werror=false \
             "{{.TASKFILE_DIR}}" "{{joinPath .TASKFILE_DIR ".build"}}"
       - cmd: |
-          rye run meson compile -C _build
+          {{.MESON}} compile -C "{{joinPath .TASKFILE_DIR ".build"}}"

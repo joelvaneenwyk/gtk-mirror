@@ -7,6 +7,10 @@
 _build/
 _ccache/
 .task/
+
 # pixi environments
 .pixi
 *.egg-info
+
+# gtk
+vcpkg_installed/

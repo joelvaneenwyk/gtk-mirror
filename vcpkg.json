@@ -1,14 +1,41 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "gtk",
-  "description": "",
   "version": "4.16.2",
+  "description": "",
+  "builtin-baseline": "c4467cb686f92671f0172aa8299a77d908175b4e",
   "dependencies": [
     "glib",
     "gtest",
     "pkgconf",
     "vcpkg-msbuild",
-    "vcpkg-pkgconfig-get-modules"
-  ],
-  "builtin-baseline": "c4467cb686f92671f0172aa8299a77d908175b4e"
+    "vcpkg-pkgconfig-get-modules",
+    {
+      "name": "gstreamer",
+      "default-features": false,
+      "features": [
+        "dtls",
+        "gpl",
+        "libav",
+        "libde265",
+        "mpg123",
+        "speex",
+        "vpx",
+        "taglib",
+        "webp",
+        "faad",
+        "openh264",
+        "openmpt",
+        "plugins-base",
+        "plugins-bad",
+        "plugins-good",
+        "plugins-ugly",
+        "openjpeg",
+        "jpeg",
+        "png",
+        "x265",
+        "x265"
+      ]
+    }
+  ]
 }
